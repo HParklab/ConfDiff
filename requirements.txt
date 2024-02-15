@@ -1,0 +1,9 @@
+matplotlib==3.8.2
+numpy==1.26.2
+py3Dmol==2.0.4
+rdkit==2023.9.3
+SciPy==1.11.4
+torch==2.0.1
+tqdm==4.66.1
+wandb==0.16.1
+ipywidgets==8.1.1
