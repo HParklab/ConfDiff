@@ -3,6 +3,7 @@ import random
 import numpy as np
 import copy
 import os 
+import datetime
 
 from pathlib import PosixPath
 from utils import get_cosine_betas, assert_mean_zero_with_mask, superimpose_keyatoms, remove_mean_with_mask
@@ -86,9 +87,9 @@ class DiffusionUtils:
         return data
     
 
-    def get_key_positions(self, mol:rdchem.Mol, pred_path:PosixPath):
+    def get_key_positions(self, mol:rdchem.Mol, key_atom_list:list):
 
-        key_idx_list, key_positions, key_CoM = get_key_positions(mol, pred_path)
+        key_idx_list, key_positions, key_CoM = get_key_positions(mol, key_atom_list)
         
         key_CoM       /= self.scale
         key_positions /= self.scale
@@ -248,7 +249,9 @@ class DiffusionProcess:
             position_list.append(data['positions'])
         
         if save:
-            self.utils.save_trajection(position_list, mol)
+            now = datetime.datetime.now()
+            filename = datetime.datetime.strftime(now, '%F_%H%M%S%f')
+            self.utils.save_trajection(position_list, mol, filename=filename)
     
         if view:
             self.utils.draw_mol_from_data(data, mol)
@@ -259,14 +262,14 @@ class DiffusionProcess:
 
 
     @torch.no_grad()
-    def conditional_sampling(self, ligand_path:PosixPath, pred_path:PosixPath, N:int=1, 
+    def conditional_sampling(self, pdb_path:PosixPath, key_atom_list:list, N:int=1, 
                              timesteps:int=0, refix_steps:int=100, resampling:int=1, silvr_rate:float=0.01,
                              view:bool=True, save:bool=False, mode:str='fixed'):
         
         self._set_noise_schedule(noise_schedule_name=self.noise_schedule_name, beta_1=self.beta_1, beta_T=self.beta_T, T=self.T)
-        mol = MolFromPDBFile(str(ligand_path))
+        mol = MolFromPDBFile(str(pdb_path))
 
-        key_idx_list, key_positions, key_CoM = self.utils.get_key_positions(mol, pred_path)
+        key_idx_list, key_positions, key_CoM = self.utils.get_key_positions(mol, key_atom_list)
         key_positions_list = []
         coordinate = copy.deepcopy(key_positions)
         for t in range(self.T):
@@ -294,7 +297,6 @@ class DiffusionProcess:
                 elif mode=='silvr':
                     key_mean = torch.mean(data['positions'][:, key_idx_list], dim=1, keepdim=True)
                     data['positions'][:, key_idx_list] += - data['positions'][:, key_idx_list] * self.alphas[t] * silvr_rate + (key_positions_list[t][None, :, :] + key_mean) * silvr_rate
-                    # data['positions'] -= torch.mean(data['positions'], dim=1, keepdim=True)
                     
                 else:
                     raise ValueError(mode)
@@ -344,8 +346,8 @@ class DiffusionProcess:
             drawMol3D(mol)
         
         if save:
-            self.utils.save_trajection(position_list, mol, f'{ligand_path.parent.name}_{mode}_resampling={resampling}')
+            self.utils.save_trajection(position_list, mol, f'{pdb_path.stem}_{mode}_resampling={resampling}')
     
         mol_out = self.utils.draw_mol_from_data(data, mol, view)
 
-        return MolFromPDBFile(str(ligand_path), removeHs=True), mol_out
+        return MolFromPDBFile(str(pdb_path), removeHs=True), mol_out

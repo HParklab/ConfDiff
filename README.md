@@ -32,9 +32,7 @@ $ mv *.xaa.sdf ZINC/
 
 Model weight can be downloaded from [Zenodo](https://zenodo.org/records/10663250)
 ```
-$ mkdir confgen/model
-$ cd confgen/model
-$ wget https://zenodo.org/records/10663250/files/model.pt
+$ wget -P confgen/model https://zenodo.org/records/10663250/files/model.pt
 ```
 
 # Train
@@ -86,7 +84,8 @@ You can easily inference from `confgen/inference.ipynb` as a user-friendly inter
 Generate molecule conformation w/o conditioning. Sample trajectory pdb file was saved in `confgen/sample`
 
 ```
-$ python confgen/inference.py --smiles <query_smiles> --model_path <model_path> --save True 
+$ cd confgen
+$ python inference.py --smiles <query_smiles> --model_path <model_path>
 ```
 
 Optional flags:
@@ -94,8 +93,30 @@ Optional flags:
 | Flag | Description | 
 |--|--|
 | --smiles | Query molecule smiles | 
-| --model_path | Model weight path |
 | --n_samples | Number of sampled molecule |
+| --timesteps | Compressed time steps for inference speed acceleration (using DDIM) |
+| --model_path | Model weight path |
 | --save | Save sampled molecule with diffusion trajectories |
 
 ### Conditional Sampling
+
+Generate molecule conformation w conditioning. 
+
+```
+$ cd confgen
+$ python inference.py --pdb_path <query_molecule_pdb> --key_atom_list <key_atom_list> --model_path <model_path> 
+```
+
+Optional flags:
+
+| Flag | Description | 
+|--|--|
+| --pdb_path | Query molecule pdb path | 
+| --key_atom_list | Key atom name list (e.g. O1 O2 C10 C15) | 
+| --resampling | Number of resampling for each steps | 
+| --refix | Number of refix steps | 
+| --mode | Conditioning mode (`fixed` or `replacement`) | 
+| --n_samples | Number of sampled molecule |
+| --timesteps | Compressed time steps for inference speed acceleration (using DDIM) |
+| --model_path | Model weight path |
+| --save | Save sampled molecule with diffusion trajectories |

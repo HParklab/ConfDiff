@@ -145,27 +145,31 @@ def superimpose_keyatoms(gen_positions:np.ndarray, key_positions:np.ndarray, key
     return np.array(out_positions)
 
 
-def get_key_positions(mol, pred_path):
-    
-    with open(pred_path) as f:
-        data_list = [line.strip() for line in f.read().split('\n') if len(line)>4]
+def get_key_positions(mol, key_atom_list):
     
     refix_residue_name = lambda name: name[3]+name[0:3] if len(name)==4 else name.strip()
     name_to_idx = {
         refix_residue_name(atom.GetPDBResidueInfo().GetName().strip()) : atom.GetIdx()
         for atom in mol.GetAtoms()
     }
+    
+    positions = mol.GetConformer().GetPositions()
+    name_to_posi = {
+        refix_residue_name(atom.GetPDBResidueInfo().GetName().strip()) : positions[idx]
+        for idx, atom in enumerate(mol.GetAtoms())
+    }
 
     try:
-        key_idx_list  = [name_to_idx[line[12:16].strip()] for line in data_list]
+        
+        key_idx_list  = [name_to_idx[key_atom] for key_atom in key_atom_list]
         key_positions = np.array([
-            [float(posi) for posi in line[26:55].split()] 
-            for line in data_list]
+            name_to_posi[key_atom] for key_atom in key_atom_list]
         ) 
         key_CoM        = key_positions.mean(axis=0)    
         key_positions -= key_CoM
         
         return key_idx_list, key_positions, key_CoM
     
-    except:
-        raise ValueError(data_list, name_to_idx)
+    except Exception as e:
+        
+        raise ValueError(e, key_atom_list, name_to_idx)
