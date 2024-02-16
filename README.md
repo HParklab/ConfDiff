@@ -16,7 +16,7 @@ $ pip install -r requirements.txt
 
 ## Dataset (Use only for training)
 
-We use custom ZINC20 drug-like dataset to train/valid model, which described `dataset/README.md` for detailed filtering.
+We use a custom ZINC20 drug-like dataset to train our model, detailed filtering is described in the `dataset/README.md`.
 
 ```
 $ cd datset
@@ -75,7 +75,7 @@ Optional flags:
 # Inference
 
 ## Option 1. GUI (jupyter notebook)
-You can easily inference from `confgen/inference.ipynb` as a user-friendly interface with GUI enviorments.
+You can easily inference from `confgen/inference.ipynb` as a user-friendly interface with GUI enviroments.
 
 ## Option 2. CLI
 
@@ -120,3 +120,14 @@ Optional flags:
 | --timesteps | Compressed time steps for inference speed acceleration (using DDIM) |
 | --model_path | Model weight path |
 | --save | Save sampled molecule with diffusion trajectories |
+
+
+# Acknowledgements
+
+[ehoogeboom / e3_diffusion_for_molecules](https://github.com/ehoogeboom/e3_diffusion_for_molecules) (Model Architecture)
+
+[ermongroup / ddim](https://github.com/ermongroup/ddim) (Accelerate Inference Speed)
+
+[arneschneuing / DiffSBDD](https://github.com/arneschneuing/DiffSBDD) (Conditioning Method)
+
+[blt2114 / ProtDiff_SMCDiff](https://github.com/blt2114/ProtDiff_SMCDiff) (Data Representation)
