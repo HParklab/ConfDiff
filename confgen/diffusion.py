@@ -30,6 +30,9 @@ class DiffusionUtils:
         mol = copy.deepcopy(mol)
         mol.RemoveConformer(0)
         
+        if view:
+            print('confgen generation')
+            
         for n, position in enumerate(data['positions']):
             
             for i in range(mol_conf.GetNumAtoms()):
@@ -341,7 +344,11 @@ class DiffusionProcess:
         position_list.append(data['positions'])
         
         if view:
+            
+            print('PDB')
             drawMol3D(mol)
+            
+            print('\nrdkit generation')
             AllChem.EmbedMolecule(mol)
             drawMol3D(mol)
         
